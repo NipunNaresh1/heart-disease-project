@@ -135,6 +135,56 @@ def get_age_distribution():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/chest_pain_analysis')
+def get_chest_pain_analysis():
+    """Get chest pain type analysis"""
+    try:
+        query = """
+            SELECT 
+                CASE 
+                    WHEN cp = 1 THEN 'Typical Angina'
+                    WHEN cp = 2 THEN 'Atypical Angina'
+                    WHEN cp = 3 THEN 'Non-anginal Pain'
+                    WHEN cp = 4 THEN 'Asymptomatic'
+                END as chest_pain_type,
+                COUNT(*) as count,
+                SUM(CASE WHEN target = 1 THEN 1 ELSE 0 END) as heart_disease_cases,
+                ROUND((SUM(CASE WHEN target = 1 THEN 1 ELSE 0 END) * 100.0) / COUNT(*), 1) as percentage
+            FROM heart_disease
+            GROUP BY cp
+            ORDER BY count DESC
+        """
+        return jsonify(execute_query(query))
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/cholesterol_analysis')
+def get_cholesterol_analysis():
+    """Get cholesterol level analysis"""
+    try:
+        query = """
+            SELECT 
+                CASE 
+                    WHEN chol < 200 THEN 'Normal (<200)'
+                    WHEN chol BETWEEN 200 AND 239 THEN 'Borderline High (200-239)'
+                    WHEN chol >= 240 THEN 'High (>=240)'
+                END as cholesterol_level,
+                COUNT(*) as count,
+                SUM(CASE WHEN target = 1 THEN 1 ELSE 0 END) as heart_disease_cases,
+                ROUND(AVG(chol), 1) as avg_cholesterol
+            FROM heart_disease
+            GROUP BY 
+                CASE 
+                    WHEN chol < 200 THEN 'Normal (<200)'
+                    WHEN chol BETWEEN 200 AND 239 THEN 'Borderline High (200-239)'
+                    WHEN chol >= 240 THEN 'High (>=240)'
+                END
+            ORDER BY avg_cholesterol
+        """
+        return jsonify(execute_query(query))
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/health')
 def health_check():
     """Health check endpoint"""

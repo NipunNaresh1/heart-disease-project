@@ -165,6 +165,8 @@
             loadOverviewStats();
             loadGenderDistribution();
             loadAgeDistribution();
+            loadChestPainAnalysis();
+            loadCholesterolAnalysis();
         });
 
         // Load overview statistics
@@ -245,6 +247,77 @@
                 });
             } catch (error) {
                 console.error('Error loading age distribution:', error);
+            }
+        }
+
+        // Load chest pain analysis
+        async function loadChestPainAnalysis() {
+            try {
+                const response = await fetch('/api/chest_pain_analysis');
+                const data = await response.json();
+                
+                const ctx = document.getElementById('chestPainChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.map(d => d.chest_pain_type),
+                        datasets: [{
+                            data: data.map(d => d.count),
+                            backgroundColor: [
+                                '#FF6384',
+                                '#36A2EB',
+                                '#FFCE56',
+                                '#4BC0C0'
+                            ],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading chest pain analysis:', error);
+            }
+        }
+
+        // Load cholesterol analysis
+        async function loadCholesterolAnalysis() {
+            try {
+                const response = await fetch('/api/cholesterol_analysis');
+                const data = await response.json();
+                
+                const ctx = document.getElementById('cholesterolChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(d => d.cholesterol_level),
+                        datasets: [{
+                            label: 'Total Patients',
+                            data: data.map(d => d.count),
+                            backgroundColor: '#FFCE56',
+                            borderColor: '#FFCE56',
+                            borderWidth: 1
+                        }, {
+                            label: 'Heart Disease Cases',
+                            data: data.map(d => d.heart_disease_cases),
+                            backgroundColor: '#FF6384',
+                            borderColor: '#FF6384',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading cholesterol analysis:', error);
             }
         }
     </script>
